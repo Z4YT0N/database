@@ -1,0 +1,178 @@
+name: Build and Push Docker
+# Auto-publish disabled for this personal fork: there is no configured
+# container registry/credentials to push to. Kept as workflow_dispatch so it
+# can be run manually (or re-enabled on push/release) once you set one up.
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [linux/amd64, linux/arm64]
+        image: [web, workers, cli, mcp, aio]
+        include:
+          - platform: linux/amd64
+            suffix: amd64
+            os: ubuntu-latest
+          - platform: linux/arm64
+            suffix: arm64
+            os: ubuntu-24.04-arm
+          - image: web
+            name: noted-web
+            target: web
+            tags_latest: ghcr.io/noted-app/noted-web:latest
+            tags_release: ghcr.io/noted-app/noted-web:${{ github.event.release.name }},ghcr.io/noted-app/noted-web:release
+          - image: workers
+            name: noted-workers
+            target: workers
+            tags_latest: ghcr.io/noted-app/noted-workers:latest
+            tags_release: ghcr.io/noted-app/noted-workers:${{ github.event.release.name }},ghcr.io/noted-app/noted-workers:release
+          - image: cli
+            name: noted-cli
+            target: cli
+            tags_latest: ghcr.io/noted-app/noted-cli:latest
+            tags_release: ghcr.io/noted-app/noted-cli:${{ github.event.release.name }},ghcr.io/noted-app/noted-cli:release
+          - image: mcp
+            name: noted-mcp
+            target: mcp
+            tags_latest: ghcr.io/noted-app/noted-mcp:latest
+            tags_release: ghcr.io/noted-app/noted-mcp:${{ github.event.release.name }},ghcr.io/noted-app/noted-mcp:release
+          - image: aio
+            name: noted-aio
+            target: aio
+            tags_latest: ghcr.io/noted-app/noted:latest
+            tags_release: ghcr.io/noted-app/noted:${{ github.event.release.name }},ghcr.io/noted-app/noted:release
+    runs-on: ${{ matrix.os }}
+    permissions:
+      packages: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      - name: Login to Github Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_GITHUB_PAT }}
+
+      - name: Prepare tags
+        id: tags
+        run: |
+          set -euo pipefail
+          add_suffix() {
+            local value="$1"
+            local out=""
+            IFS=',' read -ra items <<< "$value"
+            for item in "${items[@]}"; do
+              out+="${item}-${{ matrix.suffix }},"
+            done
+            echo "${out%,}"
+          }
+
+          all_tags=""
+
+          # Only push 'latest' tags on pushes to main, not on releases
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            latest_with_suffix=$(add_suffix "${{ matrix.tags_latest }}")
+            all_tags="${latest_with_suffix}"
+            echo "latest=${latest_with_suffix}" >> "$GITHUB_OUTPUT"
+          fi
+
+          # Only push release-specific tags on releases
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            release_with_suffix=$(add_suffix "${{ matrix.tags_release }}")
+            all_tags="${release_with_suffix}"
+            echo "release=${release_with_suffix}" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "all=${all_tags}" >> "$GITHUB_OUTPUT"
+
+      - name: Build ${{ matrix.name }}
+        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5
+        with:
+          context: .
+          build-args: SERVER_VERSION=${{ github.event_name == 'release' && github.event.release.name || 'nightly' }}
+          file: docker/Dockerfile
+          target: ${{ matrix.target }}
+          platforms: ${{ matrix.platform }}
+          push: true
+          tags: ${{ steps.tags.outputs.all }}
+          cache-from: type=registry,ref=ghcr.io/noted-app/noted-build-cache:${{ matrix.target }}-${{ matrix.suffix }}
+          cache-to: type=registry,mode=max,ref=ghcr.io/noted-app/noted-build-cache:${{ matrix.target }}-${{ matrix.suffix }}
+
+  manifest:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: noted-web
+            tags_latest: ghcr.io/noted-app/noted-web:latest
+            tags_release: ghcr.io/noted-app/noted-web:${{ github.event.release.name }},ghcr.io/noted-app/noted-web:release
+          - name: noted-workers
+            tags_latest: ghcr.io/noted-app/noted-workers:latest
+            tags_release: ghcr.io/noted-app/noted-workers:${{ github.event.release.name }},ghcr.io/noted-app/noted-workers:release
+          - name: noted-cli
+            tags_latest: ghcr.io/noted-app/noted-cli:latest
+            tags_release: ghcr.io/noted-app/noted-cli:${{ github.event.release.name }},ghcr.io/noted-app/noted-cli:release
+          - name: noted-mcp
+            tags_latest: ghcr.io/noted-app/noted-mcp:latest
+            tags_release: ghcr.io/noted-app/noted-mcp:${{ github.event.release.name }},ghcr.io/noted-app/noted-mcp:release
+          - name: noted-aio
+            tags_latest: ghcr.io/noted-app/noted:latest
+            tags_release: ghcr.io/noted-app/noted:${{ github.event.release.name }},ghcr.io/noted-app/noted:release
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      - name: Login to Github Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_GITHUB_PAT }}
+
+      - name: Create manifests for ${{ matrix.name }}
+        env:
+          TAGS_LATEST: ${{ matrix.tags_latest }}
+          TAGS_RELEASE: ${{ matrix.tags_release }}
+          IS_RELEASE: ${{ github.event_name == 'release' }}
+          IS_PUSH: ${{ github.event_name == 'push' }}
+        run: |
+          set -euo pipefail
+
+          create_manifest() {
+            local tag="$1"
+            docker buildx imagetools create \
+              -t "${tag}" \
+              "${tag}-amd64" \
+              "${tag}-arm64"
+          }
+
+          # Only create 'latest' manifests on pushes to main
+          if [[ "${IS_PUSH}" == "true" ]]; then
+            IFS=',' read -ra latest_tags <<< "${TAGS_LATEST}"
+            for tag in "${latest_tags[@]}"; do
+              create_manifest "$tag"
+            done
+          fi
+
+          # Only create release-specific manifests on releases
+          if [[ "${IS_RELEASE}" == "true" ]]; then
+            IFS=',' read -ra release_tags <<< "${TAGS_RELEASE}"
+            for tag in "${release_tags[@]}"; do
+              create_manifest "$tag"
+            done
+          fi

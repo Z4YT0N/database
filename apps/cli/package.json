@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "@noted/cli",
+  "version": "0.33.1",
+  "description": "Command Line Interface (CLI) for Noted",
+  "license": "GNU Affero General Public License version 3",
+  "type": "module",
+  "keywords": [
+    "noted",
+    "cli"
+  ],
+  "exports": "./dist/index.mjs",
+  "bin": {
+    "noted": "dist/index.mjs"
+  },
+  "devDependencies": {
+    "@commander-js/extra-typings": "^12.0.1",
+    "@noted/shared": "workspace:^0.1.0",
+    "@noted/trpc": "workspace:^0.1.0",
+    "@noted/tsconfig": "workspace:^0.1.0",
+    "@trpc/client": "^11.9.0",
+    "@trpc/server": "^11.9.0",
+    "@tsconfig/node22": "^22.0.0",
+    "chalk": "^5.3.0",
+    "commander": "^12.0.0",
+    "superjson": "^2.2.1",
+    "table": "^6.8.2",
+    "tsx": "^4.8.1",
+    "vite": "^7.0.6",
+    "vite-tsconfig-paths": "^6.1.1",
+    "zod": "^4.0.0"
+  },
+  "scripts": {
+    "build": "vite build && chmod +x dist/index.mjs",
+    "run": "tsx src/index.ts",
+    "lint": "oxlint --ignore-path=../../.gitignore .",
+    "lint:fix": "oxlint --ignore-path=../../.gitignore . --fix",
+    "format": "oxfmt --ignore-path=../../.gitignore --ignore-path=./.gitignore --check .",
+    "format:fix": "oxfmt --ignore-path=../../.gitignore --ignore-path=./.gitignore .",
+    "typecheck": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Z4YT0N/database.git",
+    "directory": "apps/cli"
+  }
+}

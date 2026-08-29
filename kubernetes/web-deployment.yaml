@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: noted-web
+  template:
+    metadata:
+      labels:
+        app: noted-web
+    spec:
+      containers:
+        - name: web
+          # NOTE: no public registry is published for this personal fork.
+          # Build docker/Dockerfile (target: aio) yourself and push it to your
+          # own registry, then update this image reference.
+          image: ghcr.io/noted-app/noted
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          env:
+            - name: MEILI_ADDR
+              value: http://meilisearch:7700
+            - name: BROWSER_WEB_URL
+              value: http://chrome:9222
+            - name: DATA_DIR
+              value: /data
+            # Add OPENAI_API_KEY to the ConfigMap if necessary
+          volumeMounts:
+            - mountPath: /data
+              name: data
+          envFrom:
+            - secretRef:
+                name: noted-secrets
+            - configMapRef:
+                name: noted-configuration
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: data-pvc
