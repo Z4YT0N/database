@@ -1,10 +1,7 @@
 import RSS from "rss";
 
 import serverConfig from "@noted/shared/config";
-import {
-  BookmarkTypes,
-  ZPublicBookmark,
-} from "@noted/shared/types/bookmarks";
+import { BookmarkTypes, ZPublicBookmark } from "@noted/shared/types/bookmarks";
 import { getAssetUrl } from "@noted/shared/utils/assetUtils";
 import { isAllowedBookmarkUrl } from "@noted/shared/utils/url";
 

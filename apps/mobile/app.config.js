@@ -65,9 +65,7 @@ export default {
           backgroundColor: "#000000",
         },
       },
-      package: IS_DEV
-        ? "app.noted.notedmobile.dev"
-        : "app.noted.notedmobile",
+      package: IS_DEV ? "app.noted.notedmobile.dev" : "app.noted.notedmobile",
       versionCode: 44,
     },
     plugins: [

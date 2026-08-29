@@ -34,8 +34,7 @@ import { RuleEngine } from "../ruleEngine";
 
 // Mock the queue
 vi.mock("@noted/shared-server", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("@noted/shared-server")>();
+  const actual = await importOriginal<typeof import("@noted/shared-server")>();
   return {
     ...actual,
     LowPriorityCrawlerQueue: {

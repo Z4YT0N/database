@@ -14,9 +14,7 @@ export default function ServerAddress() {
   const { colorScheme } = useColorScheme();
   const iconColor = colorScheme === "dark" ? "#d1d5db" : "#374151";
   const { settings, setSettings } = useAppSettings();
-  const [address, setAddress] = useState(
-    settings.address ?? "",
-  );
+  const [address, setAddress] = useState(settings.address ?? "");
   const [error, setError] = useState<string | undefined>();
 
   // Custom headers state

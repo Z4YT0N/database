@@ -292,9 +292,7 @@ export function ImportExportRow() {
         </ImportCard>
         <ImportCard
           text="Noted"
-          description={t(
-            "settings.import.import_bookmarks_from_noted_export",
-          )}
+          description={t("settings.import.import_bookmarks_from_noted_export")}
         >
           <FilePickerButton
             size={"sm"}

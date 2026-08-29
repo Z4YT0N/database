@@ -30,9 +30,7 @@ describe("validateRedirectUrl", () => {
 
   it("should allow noted:// scheme for mobile app", () => {
     expect(validateRedirectUrl("noted://")).toBe("noted://");
-    expect(validateRedirectUrl("noted://callback")).toBe(
-      "noted://callback",
-    );
+    expect(validateRedirectUrl("noted://callback")).toBe("noted://callback");
     expect(validateRedirectUrl("noted://callback/path")).toBe(
       "noted://callback/path",
     );

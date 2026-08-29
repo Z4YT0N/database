@@ -22,11 +22,7 @@ import { abortRace, abortRaceResolve, raceWith, timeoutRace } from "utils";
 
 import { db } from "@noted/db";
 import { users } from "@noted/db/schema";
-import {
-  getTracer,
-  setSpanAttributes,
-  withSpan,
-} from "@noted/shared-server";
+import { getTracer, setSpanAttributes, withSpan } from "@noted/shared-server";
 import serverConfig from "@noted/shared/config";
 import logger from "@noted/shared/logger";
 import { tryCatch } from "@noted/shared/tryCatch";

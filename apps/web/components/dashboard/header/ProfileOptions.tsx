@@ -144,7 +144,11 @@ export default function SidebarProfileOptions() {
           </a>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <a href="https://github.com/Z4YT0N/database" target="_blank" rel="noreferrer">
+          <a
+            href="https://github.com/Z4YT0N/database"
+            target="_blank"
+            rel="noreferrer"
+          >
             <BookOpen className="mr-2 size-4" />
             {t("options.documentation")}
           </a>

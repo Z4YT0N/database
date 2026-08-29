@@ -1,9 +1,6 @@
 import { z } from "zod";
 
-import {
-  zBookmarkSearchMode,
-  zSortOrder,
-} from "@noted/shared/types/bookmarks";
+import { zBookmarkSearchMode, zSortOrder } from "@noted/shared/types/bookmarks";
 
 export const zStringBool = z
   .string()

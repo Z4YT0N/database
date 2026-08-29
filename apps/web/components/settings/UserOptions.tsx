@@ -14,10 +14,7 @@ import { z } from "zod";
 
 import { useUpdateUserSettings } from "@noted/shared-react/hooks/users";
 import { langNameMappings } from "@noted/shared/langs";
-import {
-  ZUserSettings,
-  zUserSettingsSchema,
-} from "@noted/shared/types/users";
+import { ZUserSettings, zUserSettingsSchema } from "@noted/shared/types/users";
 
 import { Form, FormField } from "../ui/form";
 import { Label } from "../ui/label";

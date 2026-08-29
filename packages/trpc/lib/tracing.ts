@@ -1,10 +1,6 @@
 import { SpanKind } from "@opentelemetry/api";
 
-import {
-  getTracer,
-  setSpanAttributes,
-  withSpan,
-} from "@noted/shared-server";
+import { getTracer, setSpanAttributes, withSpan } from "@noted/shared-server";
 import serverConfig from "@noted/shared/config";
 
 import type { Context } from "../index";

@@ -3,10 +3,7 @@ import { z } from "zod";
 
 import type { DB } from "@noted/db";
 import { rssFeedsTable } from "@noted/db/schema";
-import {
-  zNewFeedSchema,
-  zUpdateFeedSchema,
-} from "@noted/shared/types/feeds";
+import { zNewFeedSchema, zUpdateFeedSchema } from "@noted/shared/types/feeds";
 
 type Feed = typeof rssFeedsTable.$inferSelect;
 

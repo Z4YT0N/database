@@ -19,10 +19,7 @@ import type {
   RuleEngineRule,
   RuleEngineRuleEvent,
 } from "@noted/shared/types/rules";
-import {
-  useCreateRule,
-  useUpdateRule,
-} from "@noted/shared-react/hooks/rules";
+import { useCreateRule, useUpdateRule } from "@noted/shared-react/hooks/rules";
 
 interface RuleEditorProps {
   rule: Omit<RuleEngineRule, "id"> & { id: string | null };

@@ -4,10 +4,7 @@ import { z } from "zod";
 import type { DB } from "@noted/db";
 import type { rssFeedsTable } from "@noted/db/schema";
 import serverConfig from "@noted/shared/config";
-import {
-  zNewFeedSchema,
-  zUpdateFeedSchema,
-} from "@noted/shared/types/feeds";
+import { zNewFeedSchema, zUpdateFeedSchema } from "@noted/shared/types/feeds";
 
 import type { Actor, Authorized } from "../lib/actor";
 import { actorUserId, assertOwnership, authorize } from "../lib/actor";
