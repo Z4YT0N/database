@@ -108,22 +108,21 @@ export default {
       ],
       "expo-sharing",
       "expo-web-browser",
-      [
-        "@sentry/react-native/expo",
-        {
-          url: "https://sentry.io/",
-          project: "react-native",
-          organization: "localhost-labs-ltd",
-        },
-      ],
+      // The @sentry/react-native/expo plugin (source map upload during EAS
+      // Build) was removed here: it pointed at Karakeep's own Sentry org
+      // (localhost-labs-ltd), which this fork has no access to. Sentry.init()
+      // in app/_layout.tsx already has an empty dsn, so crash reporting is
+      // off by default. To re-enable it, create your own Sentry project and
+      // add the plugin back with your org/project, plus a real dsn.
     ],
     extra: {
       router: {
         origin: false,
       },
-      eas: {
-        projectId: "d6d14643-ad43-4cd3-902a-92c5944d5e45",
-      },
+      // No eas.projectId here on purpose: the upstream value pointed at
+      // Karakeep's own Expo project, which this fork can't use. Running
+      // `eas init` (or the first `eas build`) will create a new project
+      // under your own Expo account and write its id back here.
     },
   },
 };

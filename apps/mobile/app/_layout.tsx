@@ -21,7 +21,11 @@ import { NAV_THEME } from "@/theme";
 import * as Sentry from "@sentry/react-native";
 
 Sentry.init({
-  dsn: "https://a61d93ed65066ed54c8566ba6b6a01d2@o4511008866172928.ingest.de.sentry.io/4511008868270160",
+  // Blank by default: this fork has no Sentry project of its own, and the
+  // upstream Karakeep DSN was removed so crash reports from this fork don't
+  // get sent to Karakeep's account. An empty dsn makes Sentry.init() a no-op.
+  // Set your own DSN here (or via an env var) if you want crash reporting.
+  dsn: "",
 
   // Adds more context data to events (IP address, cookies, user, etc.)
   // For more information, visit: https://docs.sentry.io/platforms/react-native/data-management/data-collected/
