@@ -38,6 +38,27 @@ const dnsCache = new LRUCache<string, string[]>({
   ttl: 5 * 60 * 1000, // 5 minutes in milliseconds
 });
 
+async function withDnsTimeout<T>(
+  promise: Promise<T>,
+  timeoutMessage: string,
+): Promise<T> {
+  const timeoutMs =
+    serverConfig.crawler.ipValidation.dnsResolverTimeoutSec * 1000;
+  let timer: NodeJS.Timeout | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<never>((_resolve, reject) => {
+        timer = setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timer) {
+      clearTimeout(timer);
+    }
+  }
+}
+
 async function resolveHostAddresses(hostname: string): Promise<string[]> {
   const resolver = new dns.Resolver({
     timeout: serverConfig.crawler.ipValidation.dnsResolverTimeoutSec * 1000,
@@ -66,6 +87,30 @@ async function resolveHostAddresses(hostname: string): Promise<string[]> {
 
   if (addresses.length > 0) {
     return addresses;
+  }
+
+  // c-ares (what dns.Resolver talks to) needs a usable nameserver list, and it
+  // silently falls back to 127.0.0.1 when it can't read the OS config — which
+  // is nothing on most machines, so every resolve4/resolve6 fails with
+  // ECONNREFUSED and no URL can ever be crawled. getaddrinfo still works in
+  // that state, so fall back to it. Every address returned here goes through
+  // the same isAddressForbidden checks in validateUrl as the c-ares ones, so
+  // this widens which resolver answers the question, not which answers pass.
+  try {
+    const resolved = await withDnsTimeout(
+      dns.lookup(hostname, { all: true, verbatim: true }),
+      // dns.lookup runs on the libuv threadpool and can't be cancelled, so this
+      // bounds how long validation waits on it, not the call itself.
+      `getaddrinfo lookup for ${hostname} timed out`,
+    );
+    if (resolved.length > 0) {
+      logger.warn(
+        `[network] dns.Resolver could not resolve "${hostname}" (${errors.join("; ")}); fell back to the OS resolver. Check the machine's DNS configuration — dns.getServers() reports [${dns.getServers()}].`,
+      );
+      return resolved.map((entry) => entry.address);
+    }
+  } catch (e) {
+    errors.push(e instanceof Error ? e.message : String(e));
   }
 
   const errorMessage =

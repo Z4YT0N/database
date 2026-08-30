@@ -1,6 +1,7 @@
 // Runs the HTML parsing (metadata extraction + readability) in a separate
 // node process with a bounded heap, so a pathological page can't OOM the
 // worker itself.
+import { fileURLToPath } from "node:url";
 import { execa } from "execa";
 
 import { getTracer, withSpan } from "@noted/shared-server";
@@ -56,12 +57,19 @@ export function replaceEmbeddedMediaDataUris(htmlContent: string): {
 
 function getSubprocessScriptPath(): string {
   const currentUrl = import.meta.url;
+  // fileURLToPath, not URL.pathname: on Windows the latter yields a "/C:/..."
+  // POSIX-style path that the spawned interpreter can't open, so every parse
+  // subprocess exits 1 and no page is ever crawlable.
   if (currentUrl.includes("/dist/")) {
     // Production: running from built output
-    return new URL("./scripts/parseHtmlSubprocess.js", currentUrl).pathname;
+    return fileURLToPath(
+      new URL("./scripts/parseHtmlSubprocess.js", currentUrl),
+    );
   }
   // Dev mode: running via tsx
-  return new URL("../../scripts/parseHtmlSubprocess.ts", currentUrl).pathname;
+  return fileURLToPath(
+    new URL("../../scripts/parseHtmlSubprocess.ts", currentUrl),
+  );
 }
 
 function getSubprocessCommand(): { cmd: string; args: string[] } {
